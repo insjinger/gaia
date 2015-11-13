@@ -38,6 +38,7 @@ KeyboardAppBuilder.prototype.copyStaticFiles = function() {
                                'js/settings',
                                'js/shared',
                                'js/keyboard',
+                               'js/numpad',
                                'js/views');
 
   dirs.forEach(function(dirName) {
