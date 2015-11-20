@@ -330,6 +330,7 @@ contacts.Form = (function() {
     givenName.value = extractValue(contact.givenName);
     familyName.value = extractValue(contact.familyName);
     company.value = extractValue(contact.org);
+    window.addEventListener('keydown', showForm);
 
     if (nonEditableValues[company.value]) {
       var nodeClass = company.parentNode.classList;
@@ -368,6 +369,33 @@ contacts.Form = (function() {
       Contacts.confirmDialog(null, msg, noObject, yesObject);
     };
   };
+
+  function showForm(event) {
+    if(event.key === 'BrowserBack') {
+      var disable = saveButton.getAttribute('disabled');
+      if(!disable && mode==='edit') {
+        var msg = 'editContactMessage';
+        var title = 'editContactTitle';
+        var yesObject = {
+          title: 'yes',
+          callback: function onAccept() {
+            ConfirmDialog.hide();
+          }
+        };
+        var noObject = {
+          title: 'no',
+          callback: function onCancel() {
+            ConfirmDialog.hide();
+            var config = { detail: { type: formHeader.action } };
+            var e = new CustomEvent('action', config);
+            window.removeEventListener('keydown', showForm);
+            setTimeout(() => formHeader.dispatchEvent(e));
+          }
+        };
+        Contacts.confirmDialog(title, msg, noObject, yesObject);
+      }
+    }
+  }
 
   // Checks whether is an ICE contact or not
   function isIceContact(contact, cb) {
@@ -822,6 +850,11 @@ contacts.Form = (function() {
       formHeader.addEventListener('action', cancelHandler);
       doMatch(contact, callbacks);
     });
+    if (mode === 'edit') {
+      Contacts.showStatus({
+        id: 'updateContact'
+      });
+    }
   }
 
   var cookMatchingCallbacks = function cookMatchingCallbacks(contact) {
@@ -1367,10 +1400,10 @@ contacts.Form = (function() {
 
   function removeOrUpdatePhoto() {
     LazyLoader.load('/contacts/js/action_menu.js', function() {
-      var prompt = new ActionMenu('photo-options');
-      prompt.addToList({id: 'remove-photo'}, removePhoto);
+      var prompt = new ActionMenu('photo-options-menu');
+      prompt.addToList({id: 'remove-picture'}, removePhoto);
 
-      prompt.addToList({id: 'change-photo'}, pickImage);
+      prompt.addToList({id: 'change-picture'}, pickImage);
 
       prompt.show();
     });
